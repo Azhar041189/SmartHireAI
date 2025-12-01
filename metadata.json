@@ -1,0 +1,5 @@
+{
+  "name": "SmartHire AI",
+  "description": "A multi-agent AI recruiting platform for non-technical recruiters to automate JD creation, resume screening, and interview preparation.",
+  "requestFramePermissions": []
+}
