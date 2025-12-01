@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { useTheme } from '../context/ThemeContext';
-import { ArrowLeft, MapPin, DollarSign, User, Filter, Share2, LayoutGrid, List as ListIcon, MoreHorizontal, Trash2 } from 'lucide-react';
+import { ArrowLeft, MapPin, DollarSign, User, Filter, Share2, LayoutGrid, List as ListIcon, MoreHorizontal, Trash2, Download } from 'lucide-react';
 
 export const JobDetail: React.FC = () => {
   const { id } = useParams();
@@ -30,6 +30,28 @@ export const JobDetail: React.FC = () => {
       addToast(`Job "${job.title}" deleted`, 'success');
       navigate('/');
     }
+  };
+
+  const handleExportList = () => {
+    const headers = ['Name', 'Status', 'Fit Score', 'Email', 'Phone', 'Added Date'];
+    const rows = filteredCandidates.map(c => [
+      `"${c.name}"`,
+      `"${c.status}"`,
+      `"${c.aiAnalysis?.fitScore || 0}"`,
+      `"${c.email}"`,
+      `"${c.phone}"`,
+      `"${new Date(c.createdAt).toLocaleDateString()}"`
+    ]);
+    
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `job_${job.title.replace(/\s+/g, '_')}_candidates.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addToast('Candidate list exported', 'success');
   };
 
   const getStatusColor = (status: string) => {
@@ -67,13 +89,22 @@ export const JobDetail: React.FC = () => {
             <Link to="/" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors hover:-translate-x-1 duration-200" title="Return to Dashboard">
                 <ArrowLeft className="w-4 h-4" /> Back to Dashboard
             </Link>
-            <button 
-              onClick={handleDeleteJob}
-              className="text-slate-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center gap-1.5 text-sm font-medium"
-              title="Delete this job"
-            >
-              <Trash2 className="w-4 h-4"/> Delete Job
-            </button>
+            <div className="flex gap-2">
+               <button 
+                onClick={handleExportList}
+                className="text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg flex items-center gap-1.5 text-sm font-medium"
+                title="Export filtered candidate list to CSV"
+              >
+                <Download className="w-4 h-4"/> Export CSV
+              </button>
+              <button 
+                onClick={handleDeleteJob}
+                className="text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg flex items-center gap-1.5 text-sm font-medium"
+                title="Delete this job"
+              >
+                <Trash2 className="w-4 h-4"/> Delete Job
+              </button>
+            </div>
          </div>
          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
            <div>

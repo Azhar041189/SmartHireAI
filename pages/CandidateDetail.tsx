@@ -85,6 +85,71 @@ export const CandidateDetail: React.FC = () => {
     }
   };
 
+  const handleExportQuestionsPDF = () => {
+    if (!candidate.interviewQuestions) return;
+    
+    const content = `
+      <html>
+      <head>
+        <title>Interview Guide - ${candidate.name}</title>
+        <style>
+          body { font-family: sans-serif; padding: 40px; line-height: 1.6; color: #333; }
+          h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+          h2 { margin-top: 30px; color: #444; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+          ul { padding-left: 20px; }
+          li { margin-bottom: 10px; }
+          .meta { color: #666; font-size: 14px; margin-bottom: 30px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        </style>
+      </head>
+      <body>
+        <h1>Interview Guide: ${candidate.name}</h1>
+        <div class="meta">
+          <strong>Job:</strong> ${job.title}<br>
+          <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+          <strong>Tone:</strong> ${selectedTone}
+        </div>
+
+        <h2>Technical Questions</h2>
+        <ul>
+          ${candidate.interviewQuestions.technical.map(q => `<li>${q}</li>`).join('')}
+        </ul>
+
+        <h2>Behavioral Questions</h2>
+        <ul>
+          ${candidate.interviewQuestions.behavioral.map(q => `<li>${q}</li>`).join('')}
+        </ul>
+
+        <h2>Culture Fit Questions</h2>
+        <ul>
+          ${candidate.interviewQuestions.culture.map(q => `<li>${q}</li>`).join('')}
+        </ul>
+
+        <script>window.print();</script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '', 'height=800,width=800');
+    if (printWindow) {
+      printWindow.document.write(content);
+      printWindow.document.close();
+      addToast('Opening print dialog...', 'info');
+    } else {
+        addToast('Popup blocked. Please allow popups.', 'error');
+    }
+  };
+
+  const handleCopyQuestions = () => {
+    if (!candidate.interviewQuestions) return;
+    const text = [
+        "TECHNICAL:", ...candidate.interviewQuestions.technical,
+        "\nBEHAVIORAL:", ...candidate.interviewQuestions.behavioral,
+        "\nCULTURE:", ...candidate.interviewQuestions.culture
+    ].join('\n- ');
+    navigator.clipboard.writeText(text);
+    addToast('Questions copied to clipboard', 'success');
+  };
+
   // Agent 7: Salary Estimation
   const handleEstimateSalary = async () => {
     setIsEstimatingSalary(true);
@@ -547,10 +612,16 @@ export const CandidateDetail: React.FC = () => {
                    </div>
                    
                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
-                      <button className="flex-1 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" title="Copy questions to clipboard">
+                      <button 
+                        onClick={handleCopyQuestions}
+                        className="flex-1 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" title="Copy questions to clipboard"
+                      >
                         <Copy className="w-3.5 h-3.5"/> Copy All
                       </button>
-                      <button className="flex-1 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" title="Download as PDF">
+                      <button 
+                        onClick={handleExportQuestionsPDF}
+                        className="flex-1 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 flex items-center justify-center gap-1.5" title="Print/Save as PDF"
+                      >
                         <Download className="w-3.5 h-3.5"/> Export PDF
                       </button>
                    </div>
